@@ -1,0 +1,122 @@
+<%- include('partials/header'); -%>
+<ul class="recipes">
+  <% users.forEach(function(user){ 
+    user.del_id=user._id+"_del_id";
+    user.sav_id=user._id+"_sav_id",
+    
+    user.firstName1=user._id+"_"+user.firstName,
+    user.lastName1=user._id+"_"+user.lastName,
+    user.username1=user._id+"_"+user.username,
+    user.phone1=user._id+"_"+user.phone,
+    user.email1=user._id+"_"+user.email,
+    user.calories_per_day1=user._id+"_"+user.calories_per_day
+  %>
+  <li class="recipe" id="<%= user._id %>">
+    <img src="/images/smoothie.png" alt="smoothie recipe icon">
+    <h2 class="username" id="<%= user.username1 %>" ><%= user.username %></h2>
+    <br></br>
+
+    First Name: <h3 class="firstName" id="<%= user.firstName1 %>" ondblclick="onEdit(this)"><%= user.firstName %></h3>
+    Last Name: <h3 class="lastName" id="<%= user.lastName1 %>" ondblclick="onEdit(this)"><%= user.lastName %></h3>
+    Phone: <h3 class="phone" id="<%= user.phone1 %>" ondblclick="onEdit(this)"><%= user.phone %></h3>
+    Email: <h3 class="email" id="<%= user.email1 %>" ondblclick="onEdit(this)"><%= user.email %></h3>
+    Phone: <h3 class="calories_per_day" id="<%= user.calories_per_day1 %>" ondblclick="onEdit(this)"><%= user.calories_per_day %></h3>
+    
+    <button id="<%= user.del_id %>" onclick="onDelete(this)">Delete</a></button>
+    <button id="<%= user.sav_id %>" onclick="onSave(this)">Save</a></button>
+  </li>
+  <% }) %>  
+</ul>
+
+<script>
+  
+  function onDelete(item) {
+    console.log(item.id);
+    const user_id=item.id.split("_")[0];
+    console.log(user_id);
+    //location.assign('/api/users/home');
+
+    fetch('/api/admin/delete-user',{
+      method: 'POST',
+      body: JSON.stringify({ _id: user_id }),
+      headers: { 'Content-Type': 'application/json' }
+    })
+    //.then(response => response.json())
+    .then(data => {
+      location.reload();  
+      console.log(data);
+        //alert(data);
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+        //alert(error);
+    });
+  }
+
+  function onEdit(item) {
+    const id=item.id;
+    const _class=item.class;
+    console.log(id);
+
+    let element = document.getElementById(id);
+    console.log(element.nodeName);
+    element.innerHTML=`<input type="text" class=${_class} id=${id} onkeydown="onEnter(this)"> </h3>`;
+  }
+
+  function onEnter(item) {
+    if(event.key === 'Enter') {
+        //alert(item.value);        
+        const id=item.id;
+        const _class=item.class;
+
+        console.log(id);
+
+        let element = document.getElementById(id);
+        console.log(element.nodeName + "INSIDE onEnter()");
+        //element.parentElement.innerHTML.textContent=item.value;
+        element.textContent=item.value;
+        //element.innerHTML=`<h3 class=${_class} id=${id} ondblclick="onEdit(this)" />`;
+    } 
+  }
+
+  function onSave(item) {
+    let val=item.id;
+    console.log(item.id);
+    const id = val.split("_")[0];
+    console.log("SELECTED USER ID===> "+id);
+
+    const firstName=document.getElementById(id).querySelector('.firstName').textContent;
+    const lastName=document.getElementById(id).querySelector('.lastName').textContent;
+    const phone=document.getElementById(id).querySelector('.phone').textContent;
+    const email=document.getElementById(id).querySelector('.email').textContent;
+    const calories_per_day=document.getElementById(id).querySelector('.calories_per_day').textContent;
+
+    console.log("==============================>"+firstName+lastName+phone+email+calories_per_day);
+    
+    fetch('/api/admin/update-user',{
+      method: 'PUT',
+      body: JSON.stringify({ _id: id, firstName: firstName, lastName: lastName, phone: phone, email: email, calories_per_day: calories_per_day }),
+      headers: { 'Content-Type': 'application/json' }
+    })
+    .then(response => response.json())
+    .then(data => {
+      //location.reload();  
+      console.log("IN RESP: "+data.email);
+      document.getElementById(id).querySelector('.firstName').textContent=data.firstName;
+      document.getElementById(id).querySelector('.lastName').textContent=data.lastName;
+      document.getElementById(id).querySelector('.phone').textContent=data.phone;
+      document.getElementById(id).querySelector('.email').textContent=data.email;
+      document.getElementById(id).querySelector('.calories_per_day').textContent=data.calories_per_day;
+      //location.reload();
+        //alert(data);
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+        //alert(error);
+    });
+
+  }
+
+</script>
+
+<%- include('partials/footer'); -%>

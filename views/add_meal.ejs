@@ -1,0 +1,85 @@
+<%- include('partials/header'); -%>
+
+    <h1><p>Enter Your Meal Details</h1>
+    <!-- <form> --> <!-- COMMENTED THIS FORM TAG -->
+    <div class="form_meal">
+        <label for="foodname" name="foodname" required>Food Name</label>
+        <input type="text" id="foodname" required/>
+        <div class="foodname_error"></div>
+        <label for="description">Food Description</label>
+        <input type="text" id="description" required/>
+        <div class="description_error"></div>
+
+        <label for="datetime">Date-Time</label>
+        <input type="date" id="datetime" required/>
+        <div class="datetime_error"></div>
+
+        <label for="calorie">Calorie</label>
+        <input type="calorie" id="calorie" required/> <button class="calorie_btn">Find Calorie</button>
+        <div class="calorie_error"></div>
+        <button class="add_meal_btn">Add Meal</button>
+    </div>
+    <!-- </form> -->
+
+    <script>
+        const calorie_btn = document.querySelector('.calorie_btn');
+        const add_meal_btn = document.querySelector('.add_meal_btn');
+
+        let foodname, description, datetime, calorie;
+
+        calorie_btn.addEventListener('click', (e)=> {
+            const foodItem = document.getElementById("foodname").value;
+            fetch(`https://trackapi.nutritionix.com/v2/search/instant?query=${foodItem}`, {
+                method: 'GET',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'x-app-id': 'e42dbde7', 
+                    'x-app-key': 'f5f85d4ad9504a5026d68a893670b697',
+                    'x-remote-user-id': '0'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data.branded[0].nf_calories);
+                
+                document.getElementById("calorie").value=data.branded[0].nf_calories;
+
+                //alert("Success");
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                //alert(error);
+            });
+        });
+
+        add_meal_btn.addEventListener('click', (e)=> {
+            foodname=document.getElementById("foodname").value;
+            description=document.getElementById("description").value;
+            calorie=document.getElementById("calorie").value;
+            datetime=document.getElementById("datetime").value;
+
+            fetch('/api/users/add-meal',{
+                method: 'POST',
+                body: JSON.stringify({ food_name: foodname, description: description, datetime: datetime, calorie: calorie }),
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("foodname").value="";
+                document.getElementById("description").value="";
+                document.getElementById("calorie").value="";
+                document.getElementById("datetime").value="";
+                //console.log(data);
+                //alert(data);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                //alert(error);
+            });
+
+            //console.log(`foodname=${foodname} description=${description} calorie=${calorie}`);
+        });
+
+    </script>
+
+<%- include('partials/footer'); -%>

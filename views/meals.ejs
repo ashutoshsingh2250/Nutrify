@@ -1,0 +1,158 @@
+<%- include('partials/header_meals'); -%>
+<div id="form_meal" class="form_meal">
+  <input id="sel_date" type="date"></input>
+  <button id="btn_submit">By Date</button>
+</div>
+
+<% if(meals.length == 0) { console.log("No meals visible yet...",meals.length);  %>
+  <h2>No meals visible yet...</h2>
+<% } else if(meals.length > 0) {
+        if(tot_cal!=-1) { %>
+          <br></br>
+          <h2 style="text-align: center;"> Total Calories Consumed: <%= tot_cal %>gm Out of: <%= calories_per_day %>gm</h2>
+      <% } if(tot_cal > calories_per_day) {%>
+      <h2 style="color: red; text-align: center;">Your calorie intake is in excess for this day!</h2>
+      <% }%>
+  <ul class="recipes">
+    <% 
+      meals.forEach(function(meal){ 
+      meal.del_id=meal._id+"_del_id";
+      meal.sav_id=meal._id+"_sav_id",
+      meal.food_name1=meal._id+"_f_"+meal.food_name,
+      meal.description1=meal._id+"_d_"+meal.description,
+      meal.calorie1=meal._id+"_"+meal.calorie,
+      meal.datetime1=meal._id+"_"+meal.datetime %>
+    <li class="recipe" id="<%= meal._id %>">
+      <img src="/images/smoothie.png" alt="smoothie recipe icon">
+      <h2 class="food_name" id="<%= meal.food_name1 %>" ><%= meal.food_name %></h2>
+      <br></br>
+      
+      Calorie: <h3 class="calorie meal_details" id="<%= meal.calorie1 %>" ondblclick="onEdit(this)"><%= meal.calorie %></h3>mg
+      <br></br>
+      Date (YYYY-MM-DD  HH:MM:SS): <h3 class="datetime meal_details" id="<%= meal.datetime1 %>" ondblclick="onEdit(this)"><%= meal.datetime %></h3>
+
+      <br></br>
+      Description: <h3 class="description meal_details" id="<%= meal.description1 %>" ondblclick="onEdit(this)"><%= meal.description %></h3>
+      <!-- <input type="text" value="<%= meal.food_name %>"></input>
+      <input type="text" value="<%= meal.description %>"></input>
+      <input type="text" value="<%= meal.calorie %>"></input>
+      <input type="text" value="<%= meal.datetime %>"></input> -->
+      <button id="<%= meal.del_id %>" onclick="onDelete(this)">Delete</a></button>
+      <button id="<%= meal.sav_id %>" onclick="onSave(this)">Save</a></button>
+    </li>
+    <% }); }%>  
+  </ul>
+
+<script>
+  let sel_date = document.getElementById('sel_date');
+  let btn_submit = document.getElementById('btn_submit');
+  btn_submit.addEventListener('click', (e)=>{
+    //alert(sel_date.value);
+    const date=sel_date.value;
+
+    fetch(`/api/users/view-meals?date=${date}`,{
+        method: 'GET',
+        //body: JSON.stringify({ date: date }),
+        headers: { 'Content-Type': 'application/json' }
+    })
+    //.then(response => response.json())
+    .then(data => {
+        location.reload();
+        console.log("DATA CAME BACK TO POST VIEW_MEALS:", data);
+        
+        //alert(data);
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+        //alert(error);
+    });
+
+  });
+
+  function onDelete(item) {
+    console.log(item.id);
+    const meal_id=item.id.split("_")[0];
+    console.log(meal_id);
+    //location.assign('/api/users/home');
+
+    fetch('/api/users/delete-meal',{
+      method: 'POST',
+      body: JSON.stringify({ _id: meal_id }),
+      headers: { 'Content-Type': 'application/json' }
+    })
+    //.then(response => response.json())
+    .then(data => {
+      location.reload();  
+      console.log(data);
+        //alert(data);
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+        //alert(error);
+    });
+  }
+
+  function onEdit(item) {
+    const id=item.id;
+    const _class=item.class;
+    console.log(id);
+
+    let element = document.getElementById(id);
+    console.log(element.nodeName);
+    element.innerHTML=`<input type="text" class=${_class} id=${id} onkeydown="onEnter(this)"> </h3>`;
+  }
+
+  function onEnter(item) {
+    if(event.key === 'Enter') {
+        //alert(item.value);        
+        const id=item.id;
+        const _class=item.class;
+
+        console.log(id);
+
+        let element = document.getElementById(id);
+        console.log(element.nodeName + "INSIDE onEnter()");
+        //element.parentElement.innerHTML.textContent=item.value;
+        element.textContent=item.value;
+        //element.innerHTML=`<h3 class=${_class} id=${id} ondblclick="onEdit(this)" />`;
+    } 
+  }
+
+  function onSave(item) {
+    let val=item.id;
+    console.log(item.id);
+    const id = val.split("_")[0];
+    console.log(id);
+
+    const food_name=document.getElementById(id).querySelector('.food_name').textContent;
+    const calorie=document.getElementById(id).querySelector('.calorie').textContent;
+    const datetime=document.getElementById(id).querySelector('.datetime').textContent;
+    const description=document.getElementById(id).querySelector('.description').textContent;
+
+    console.log(" Calorie:" + calorie + " DateTime" + datetime + " Decription:" + description);
+    
+    fetch('/api/users/update-meal',{
+      method: 'PUT',
+      body: JSON.stringify({ _id: id, datetime: datetime, food_name: food_name, calorie: calorie, description: description }),
+      headers: { 'Content-Type': 'application/json' }
+    })
+    .then(response => response.json())
+    .then(data => {
+      //location.reload();  
+      console.log("IN RESP: "+data.calorie);
+      document.getElementById(id).querySelector('.calorie').textContent=data.calorie;
+      document.getElementById(id).querySelector('.datetime').textContent=data.datetime;
+      document.getElementById(id).querySelector('.description').textContent=data.description;
+      //location.reload();
+        //alert(data);
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+        //alert(error);
+    });
+
+  }
+
+</script>
+
+<%- include('partials/footer'); -%>

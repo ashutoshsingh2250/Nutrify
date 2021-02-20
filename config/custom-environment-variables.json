@@ -1,0 +1,4 @@
+{
+    "jwtPrivateKey": "nutrify_jwtPrivateKey",
+    "db_connect_password": "db_connect_password"
+}

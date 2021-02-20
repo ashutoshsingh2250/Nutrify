@@ -1,0 +1,71 @@
+<%- include('partials/header'); -%>
+
+<form>
+    <h2>Sign up</h2>
+    <label for="firstname" name="firstname" required>First Name</label>
+    <input type="text" name="firstname" required/>
+    <div class="firstname error"></div>
+    <label for="lastname" name="lastname" required>Last Name</label>
+    <input type="text" name="lastname" required/>
+    <div class="lastname error"></div>
+    <label for="phone" name="phone" required>Phone</label>
+    <input type="text" name="phone" required/>
+    <div class="phone error"></div>
+    <label for="calorie" name="calorie" required>Calorie Per Day</label>
+    <input type="text" name="calorie" required/>
+    <div class="calorie error"></div>
+    <label for="email" name="email" required>E-mail</label>
+    <input type="text" name="email" required/>
+    <div class="email error"></div>
+    <label for="username" name="username" required>Username</label>
+    <input type="text" name="username" required/>
+    <div class="email error"></div>
+    <label for="password">Password</label>
+    <input type="password" name="password" required/>
+    <div class="password error"></div>
+    <button>Sign up</button>
+</form>
+
+<script>
+    const form = document.querySelector('form');
+    const passwordError = document.querySelector('.password.error');
+
+
+    form.addEventListener('submit', async (e)=> {
+      e.preventDefault();
+      passwordError.textContent="";
+
+      const firstname = form.firstname.value;
+      const lastname = form.lastname.value;
+      const phone = form.phone.value;
+      const calorie = form.calorie.value;
+      const email = form.email.value;
+      const username = form.username.value;
+      const password = form.password.value;
+
+      //console.log(firstname, lastname, phone, calorie, email, username, password);
+
+      try {
+        const res= await fetch('/api/users/signup', {
+          method: 'POST',
+          body: JSON.stringify({ firstName: firstname, lastName: lastname, password: password, calories_per_day: calorie, phone: phone, email: email, username: username }),
+          headers: { 'Content-Type': 'application/json' }
+        });   
+
+        const data = await res.json();
+        console.log(data);
+
+        if(typeof data === 'object') {
+          location.assign('/api/users/home');
+        } else  if(data != null) {
+          passwordError.textContent = data;
+        }
+      }
+      catch (err) {
+        console.log(err);
+      }
+
+    });
+</script>
+
+<%- include('partials/footer'); -%>

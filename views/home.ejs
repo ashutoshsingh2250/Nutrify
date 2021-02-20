@@ -1,0 +1,85 @@
+<%- include('partials/header'); -%>
+
+<header>
+  <div class="meals">
+    <img src="/images/smoothie.png" alt="">
+  </div>
+  <div class="headings">
+    <h2>Meal Calorie</h2>
+    <h3>By Nutrify For Nutrify</h3>
+    <% if (user.isAdmin === true) { %>
+      <a href="/api/admin/view-users" class="adminUser btn">View Users</a>
+      <a href="/api/admin/view-user-meals" class="adminUserMeals btn">View User's Meals</a>
+    <% } else if(user) { %> 
+      <a href="/api/users/view-meals" class="user btn">View Meals</a>
+    <% } %> 
+  </div>
+</header>
+
+<script>
+
+  const admin_user_meals_btn = document.querySelector(".adminUserMeals.btn");
+  const admin_view_btn = document.querySelector(".adminUser.btn");
+  const user_view_btn = document.querySelector(".user.btn");
+
+  if(admin_user_meals_btn!==null) {
+    admin_user_meals_btn.addEventListener('click', (e)=> {
+      fetch('/api/admin/view-user-meals',{
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+      })
+      .then(response => response.json())
+      .then(data => {
+          console.log("DATA CAME BACK:", data);
+          //alert(data);
+      })
+      .catch((error) => {
+          console.error('Error:', error);
+          //alert(error);
+      });
+
+    });
+  }
+
+  if(admin_view_btn!==null) {
+    admin_view_btn.addEventListener('click', (e)=>{
+      fetch('/api/admin/view-users',{
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+      })
+      .then(response => response.json())
+      .then(data => {
+          console.log("DATA CAME BACK:", data);
+          //alert(data);
+      })
+      .catch((error) => {
+          console.error('Error:', error);
+          //alert(error);
+      });
+    });
+  }
+
+  if(user_view_btn!==null) {
+    user_view_btn.addEventListener('click', (e)=> {
+      //location.assign('/api/users/view-meals');
+
+      fetch('/api/users/view-meals',{
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+      })
+      .then(response => response.json())
+      .then(data => {
+          console.log("DATA CAME BACK:", data);
+          //alert(data);
+      })
+      .catch((error) => {
+          console.error('Error:', error);
+          //alert(error);
+      });
+
+    });
+  }
+
+</script>
+
+<%- include('partials/footer'); -%>
